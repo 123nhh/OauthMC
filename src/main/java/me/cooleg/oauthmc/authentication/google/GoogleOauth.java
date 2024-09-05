@@ -1,6 +1,7 @@
 package me.cooleg.oauthmc.authentication.google;
 
 import com.google.gson.*;
+import me.cooleg.oauthmc.OauthMCConfig;
 import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
 import me.cooleg.oauthmc.persistence.IDatabaseHook;
@@ -18,8 +19,9 @@ public class GoogleOauth implements IOauth {
     private final String clientId;
     private final String clientSecret;
     private final IDatabaseHook db;
+    private final OauthMCConfig config;
 
-    public GoogleOauth(String clientId, String clientSecret, IDatabaseHook db) {
+    public GoogleOauth(String clientId, String clientSecret, IDatabaseHook db, OauthMCConfig config) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(GoogleDeviceCodeResponse.class, new GoogleDeviceCodeResponse.Deserializer());
         builder.registerTypeAdapter(GooglePollingResponse.class, new GooglePollingResponse.Deserializer());
@@ -34,6 +36,7 @@ public class GoogleOauth implements IOauth {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.db = db;
+        this.config = config;
     }
 
     @Override
@@ -76,6 +79,7 @@ public class GoogleOauth implements IOauth {
 
                     System.out.println(email);
                     if (db.isInUse(email)) return;
+                    if (config.isEmailSuffixEnabled() && !email.endsWith(config.getEmailSuffix())) return;
 
                     db.setLink(uuid, email);
                     return;

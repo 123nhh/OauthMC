@@ -4,6 +4,7 @@ server-name: "<yellow>_ School Minecraft Server</yellow>"
 
 # If the Oauthed email doesn't end with this, it can't log in.
 # Esepcially useful if you are unable to make an application only functional for your organization.
+# Leave empty to disable. NOT RECOMMENDED.
 email-suffix: "@cooleg.me"
 
 # Modes: "Google", "Microsoft"

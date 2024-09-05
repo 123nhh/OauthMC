@@ -13,6 +13,8 @@ public class OauthMCConfig {
     private String clientId;
     private Component serverName;
     private String kickMessage;
+    private String emailSuffix;
+    private boolean emailSuffixEnabled;
 
     // Microsoft-Specific Settings
     private String tenant;
@@ -37,6 +39,9 @@ public class OauthMCConfig {
         if (kickMessage == null) {
             throw new RuntimeException("No kick message provided to OauthMC!");
         }
+
+        emailSuffix = configuration.getString("email-suffix");
+        emailSuffixEnabled = emailSuffix != null && !emailSuffix.trim().isEmpty();
 
         String loginModeString = configuration.getString("login-mode").toUpperCase().trim();
         try {
@@ -118,6 +123,14 @@ public class OauthMCConfig {
 
     public String getKickMessage() {
         return kickMessage;
+    }
+
+    public String getEmailSuffix() {
+        return emailSuffix;
+    }
+
+    public boolean isEmailSuffixEnabled() {
+        return emailSuffixEnabled;
     }
 
     public String getTenant() {

@@ -27,9 +27,9 @@ public final class OauthMC extends JavaPlugin {
 
         IOauth auth;
         if (config.getLoginMode() == OauthMCConfig.LoginMode.MICROSOFT) {
-            auth = new MicrosoftOauth(config.getClientId(), config.getTenant(), hook);
+            auth = new MicrosoftOauth(config.getClientId(), config.getTenant(), hook, config);
         } else {
-            auth = new GoogleOauth(config.getClientId(), config.getClientSecret(), hook);
+            auth = new GoogleOauth(config.getClientId(), config.getClientSecret(), hook, config);
         }
 
         Bukkit.getPluginManager().registerEvents(new AsyncPreLoginListener(hook, auth, config), this);

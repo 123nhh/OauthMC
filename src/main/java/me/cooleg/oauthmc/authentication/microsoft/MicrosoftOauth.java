@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import me.cooleg.oauthmc.OauthMCConfig;
 import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
 import me.cooleg.oauthmc.persistence.IDatabaseHook;
@@ -22,8 +23,9 @@ public class MicrosoftOauth implements IOauth {
     private final String clientId;
     private final String tenant;
     private final IDatabaseHook db;
+    private final OauthMCConfig config;
 
-    public MicrosoftOauth(String clientId, String tenant, IDatabaseHook db) {
+    public MicrosoftOauth(String clientId, String tenant, IDatabaseHook db, OauthMCConfig config) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(MicrosoftDeviceCodeResponse.class, new MicrosoftDeviceCodeResponse.Deserializer());
         builder.registerTypeAdapter(MicrosoftPollingResponse.class, new MicrosoftPollingResponse.Deserializer());
@@ -38,6 +40,7 @@ public class MicrosoftOauth implements IOauth {
         this.clientId = clientId;
         this.tenant = tenant;
         this.db = db;
+        this.config = config;
     }
 
     @Override
@@ -79,6 +82,7 @@ public class MicrosoftOauth implements IOauth {
 
                     System.out.println(email);
                     if (db.isInUse(email)) return;
+                    if (config.isEmailSuffixEnabled() && !email.endsWith(config.getEmailSuffix())) return;
 
                     db.setLink(uuid, email);
                     return;
