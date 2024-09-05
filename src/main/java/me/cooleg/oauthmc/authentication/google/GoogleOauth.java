@@ -3,6 +3,7 @@ package me.cooleg.oauthmc.authentication.google;
 import com.google.gson.*;
 import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
+import me.cooleg.oauthmc.persistence.IDatabaseHook;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,8 +17,9 @@ public class GoogleOauth implements IOauth {
     private final Gson gson;
     private final String clientId;
     private final String clientSecret;
+    private final IDatabaseHook db;
 
-    public GoogleOauth(String clientId, String clientSecret) {
+    public GoogleOauth(String clientId, String clientSecret, IDatabaseHook db) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(GoogleDeviceCodeResponse.class, new GoogleDeviceCodeResponse.Deserializer());
         builder.registerTypeAdapter(GooglePollingResponse.class, new GooglePollingResponse.Deserializer());
@@ -31,15 +33,18 @@ public class GoogleOauth implements IOauth {
 
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.db = db;
     }
 
     @Override
     public CodeAndLinkResponse beginLogin(UUID uuid) {
+        if (currentlyAuthenticating.containsKey(uuid)) return currentlyAuthenticating.get(uuid);
         String text = urlToResponse(requestCodeUrl, "POST", "client_id=" + encode(clientId) + "&scope=email%20profile");
         System.out.println(text);
         GoogleDeviceCodeResponse response = gson.fromJson(text, GoogleDeviceCodeResponse.class);
 
-        CompletableFuture.runAsync(() -> {
+        currentlyAuthenticating.put(uuid, response);
+        CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
             for (int i = 0; i < response.expiresIn; i += response.interval) {
                 try {
                     Thread.sleep(response.interval * 1000L);
@@ -70,12 +75,25 @@ public class GoogleOauth implements IOauth {
                     String email = object.get("email").getAsString();
 
                     System.out.println(email);
+                    if (db.isInUse(email)) return;
+
+                    db.setLink(uuid, email);
                     return;
                 } else if (pollingResponse.denied) {
                     return;
                 }
             }
-        }).exceptionally((throwable) -> {throwable.printStackTrace(); return null;});
+        });
+
+        future.thenRunAsync(() -> {
+            currentlyAuthenticating.remove(uuid);
+        });
+
+        future.exceptionally((throwable) -> {
+            currentlyAuthenticating.remove(uuid);
+            throwable.printStackTrace();
+            return null;
+        });
 
         return response;
     }

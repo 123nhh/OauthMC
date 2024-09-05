@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
+import me.cooleg.oauthmc.persistence.IDatabaseHook;
+import org.bukkit.Bukkit;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,31 +20,35 @@ public class MicrosoftOauth implements IOauth {
     private final URL requestCodeUrl;
     private final Gson gson;
     private final String clientId;
-    private final String tenantType;
+    private final String tenant;
+    private final IDatabaseHook db;
 
-    public MicrosoftOauth(String clientId, String tenantType) {
+    public MicrosoftOauth(String clientId, String tenant, IDatabaseHook db) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(MicrosoftDeviceCodeResponse.class, new MicrosoftDeviceCodeResponse.Deserializer());
         builder.registerTypeAdapter(MicrosoftPollingResponse.class, new MicrosoftPollingResponse.Deserializer());
         gson = builder.create();
 
         try {
-            requestCodeUrl = new URL("https://login.microsoftonline.com/" + tenantType + "/oauth2/v2.0/devicecode");
+            requestCodeUrl = new URL("https://login.microsoftonline.com/" + tenant + "/oauth2/v2.0/devicecode");
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
 
         this.clientId = clientId;
-        this.tenantType = tenantType;
+        this.tenant = tenant;
+        this.db = db;
     }
 
     @Override
     public CodeAndLinkResponse beginLogin(UUID uuid) {
+        if (currentlyAuthenticating.containsKey(uuid)) return currentlyAuthenticating.get(uuid);
         String text = urlToResponse(requestCodeUrl, "POST", "client_id=" + encode(clientId) + "&scope=email%20openid%20profile");
         System.out.println(text);
         MicrosoftDeviceCodeResponse response = gson.fromJson(text, MicrosoftDeviceCodeResponse.class);
 
-        CompletableFuture.runAsync(() -> {
+        currentlyAuthenticating.put(uuid, response);
+        CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
             for (int i = 0; i < response.expiresIn; i += response.interval) {
                 try {
                     Thread.sleep(response.interval * 1000L);
@@ -50,7 +56,7 @@ public class MicrosoftOauth implements IOauth {
                     throw new RuntimeException(e);
                 }
 
-                String authResponse = stringUrlToResponse("https://login.microsoftonline.com/" + tenantType + "/oauth2/v2.0/token", "POST",
+                String authResponse = stringUrlToResponse("https://login.microsoftonline.com/" + tenant + "/oauth2/v2.0/token", "POST",
                         "client_id=" + encode(clientId) +
                                 "&device_code=" + encode(response.deviceCode) +
                                 "&grant_type=" + encode("urn:ietf:params:oauth:grant-type:device_code"));
@@ -72,12 +78,25 @@ public class MicrosoftOauth implements IOauth {
                     String email = object.get("email").getAsString();
 
                     System.out.println(email);
+                    if (db.isInUse(email)) return;
+
+                    db.setLink(uuid, email);
                     return;
                 } else if (pollingResponse.denied) {
                     return;
                 }
             }
-        }).exceptionally((throwable) -> {throwable.printStackTrace(); return null;});
+        });
+
+        future.thenRunAsync(() -> {
+            currentlyAuthenticating.remove(uuid);
+        });
+
+        future.exceptionally((throwable) -> {
+            currentlyAuthenticating.remove(uuid);
+            throwable.printStackTrace();
+            return null;
+        });
 
         return response;
     }

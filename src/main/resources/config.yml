@@ -1,17 +1,37 @@
+# Minimessage string for server name. For example, "<yellow>_ School Minecraft Server</yellow>"
+# Documentation for minimessage: https://docs.advntr.dev/minimessage/index.html
+server-name: "<yellow>_ School Minecraft Server</yellow>"
+
+# If the Oauthed email doesn't end with this, it can't log in.
+# Esepcially useful if you are unable to make an application only functional for your organization.
+email-suffix: "@cooleg.me"
+
 # Modes: "Google", "Microsoft"
-mode: "Microsoft"
+login-mode: "Microsoft"
+
+# Set the message to be kicked with. Placeholders %link% and %code%.
+# Also supports minimessage formatting.
+kick-message: "<white>Please log in to your school account at <bold>%link%<bold> using code <bold>%code%<bold> to verify your enrollment.<white>"
+
+# Modes: "SQLite", "MySQL", "Redis"
+db-mode: "SQLite"
 
 microsoft-settings:
   client-id: ""
-  # Just put the tenent ID
-  tenant: "Organizations"
+  tenant: ""
 
 google-settings:
   client-id: ""
   client-secret: ""
 
+mysql-settings:
+  hostname: ""
+  port: 3306
+  username: ""
+  password: ""
+
 redis-settings:
   hostname: ""
-  port: 6969
+  port: 6379
   username: ""
   password: ""

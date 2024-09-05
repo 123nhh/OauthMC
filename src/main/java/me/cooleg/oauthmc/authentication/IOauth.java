@@ -6,9 +6,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public interface IOauth {
+
+    Map<UUID, CodeAndLinkResponse> currentlyAuthenticating = new ConcurrentHashMap<>();
 
     CodeAndLinkResponse beginLogin(UUID uuid);
 

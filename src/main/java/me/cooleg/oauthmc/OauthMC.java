@@ -1,16 +1,38 @@
 package me.cooleg.oauthmc;
 
+import me.cooleg.oauthmc.authentication.IOauth;
+import me.cooleg.oauthmc.authentication.google.GoogleOauth;
 import me.cooleg.oauthmc.authentication.microsoft.MicrosoftOauth;
+import me.cooleg.oauthmc.listeners.AsyncPreLoginListener;
+import me.cooleg.oauthmc.persistence.IDatabaseHook;
+import me.cooleg.oauthmc.persistence.impl.SqliteHook;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.UUID;
 
 public final class OauthMC extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        MicrosoftOauth auth = new MicrosoftOauth("729a413f-7839-4108-b789-045dfad5a40a", "44467e6f-462c-4ea2-823f-7800de5434e3");
-        auth.beginLogin(UUID.randomUUID());
+        saveDefaultConfig();
+        OauthMCConfig config = new OauthMCConfig(getConfig());
+
+        IDatabaseHook hook = new SqliteHook(this);;
+        if (config.getDbMode() == OauthMCConfig.DatabaseMode.SQLITE) {
+            hook = new SqliteHook(this);
+        } else if (config.getDbMode() == OauthMCConfig.DatabaseMode.REDIS) {
+            //hook = new RedisHook();
+        } else {
+            //hook = new MySQLHook();
+        }
+
+        IOauth auth;
+        if (config.getLoginMode() == OauthMCConfig.LoginMode.MICROSOFT) {
+            auth = new MicrosoftOauth(config.getClientId(), config.getTenant(), hook);
+        } else {
+            auth = new GoogleOauth(config.getClientId(), config.getClientSecret(), hook);
+        }
+
+        Bukkit.getPluginManager().registerEvents(new AsyncPreLoginListener(hook, auth, config), this);
     }
 
     @Override
