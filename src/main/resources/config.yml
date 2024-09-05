@@ -1,0 +1,17 @@
+# Modes: "Google", "Microsoft"
+mode: "Microsoft"
+
+microsoft-settings:
+  client-id: ""
+  # Just put the tenent ID
+  tenant: "Organizations"
+
+google-settings:
+  client-id: ""
+  client-secret: ""
+
+redis-settings:
+  hostname: ""
+  port: 6969
+  username: ""
+  password: ""

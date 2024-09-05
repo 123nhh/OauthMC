@@ -1,0 +1,4 @@
+name: OauthMC
+version: '${project.version}'
+main: me.cooleg.oauthmc.OauthMC
+api-version: '1.18'
