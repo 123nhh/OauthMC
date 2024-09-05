@@ -1,13 +1,13 @@
 package me.cooleg.oauthmc.authentication.microsoft;
 
 import com.google.gson.*;
+import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 
 import java.lang.reflect.Type;
 
-public class MicrosoftDeviceCodeResponse {
+public class MicrosoftDeviceCodeResponse extends CodeAndLinkResponse {
 
     public String deviceCode;
-    public String userCode;
     public int expiresIn;
     public int interval;
 
@@ -22,6 +22,7 @@ public class MicrosoftDeviceCodeResponse {
             if (object.has("error_code")) throw new RuntimeException("Ratelimited");
             response.deviceCode = object.get("device_code").getAsString();
             response.userCode = object.get("user_code").getAsString();
+            response.loginLink = object.get("verification_uri").getAsString();
             response.expiresIn = object.get("expires_in").getAsInt();
             response.interval = object.get("interval").getAsInt();
 

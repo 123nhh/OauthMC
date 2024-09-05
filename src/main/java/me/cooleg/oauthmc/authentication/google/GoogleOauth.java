@@ -1,6 +1,7 @@
 package me.cooleg.oauthmc.authentication.google;
 
 import com.google.gson.*;
+import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
 
 import java.net.MalformedURLException;
@@ -33,17 +34,7 @@ public class GoogleOauth implements IOauth {
     }
 
     @Override
-    public boolean loginPlayer(UUID uuid) {
-        return false;
-    }
-
-    @Override
-    public boolean checkIfCached(UUID uuid) {
-        return false;
-    }
-
-    @Override
-    public String generateCode(UUID uuid) {
+    public CodeAndLinkResponse beginLogin(UUID uuid) {
         String text = urlToResponse(requestCodeUrl, "POST", "client_id=" + encode(clientId) + "&scope=email%20profile");
         System.out.println(text);
         GoogleDeviceCodeResponse response = gson.fromJson(text, GoogleDeviceCodeResponse.class);
@@ -86,7 +77,7 @@ public class GoogleOauth implements IOauth {
             }
         }).exceptionally((throwable) -> {throwable.printStackTrace(); return null;});
 
-        return response.userCode;
+        return response;
     }
 
 }

@@ -10,11 +10,7 @@ import java.util.UUID;
 
 public interface IOauth {
 
-    boolean loginPlayer(UUID uuid);
-
-    boolean checkIfCached(UUID uuid);
-
-    String generateCode(UUID uuid);
+    CodeAndLinkResponse beginLogin(UUID uuid);
 
     default String urlToResponse(URL url, String method, String encodedParams) {
         try {

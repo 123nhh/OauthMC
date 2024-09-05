@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import me.cooleg.oauthmc.authentication.CodeAndLinkResponse;
 import me.cooleg.oauthmc.authentication.IOauth;
 
 import java.net.MalformedURLException;
@@ -36,17 +37,7 @@ public class MicrosoftOauth implements IOauth {
     }
 
     @Override
-    public boolean loginPlayer(UUID uuid) {
-        return false;
-    }
-
-    @Override
-    public boolean checkIfCached(UUID uuid) {
-        return false;
-    }
-
-    @Override
-    public String generateCode(UUID uuid) {
+    public CodeAndLinkResponse beginLogin(UUID uuid) {
         String text = urlToResponse(requestCodeUrl, "POST", "client_id=" + encode(clientId) + "&scope=email%20openid%20profile");
         System.out.println(text);
         MicrosoftDeviceCodeResponse response = gson.fromJson(text, MicrosoftDeviceCodeResponse.class);
@@ -88,7 +79,7 @@ public class MicrosoftOauth implements IOauth {
             }
         }).exceptionally((throwable) -> {throwable.printStackTrace(); return null;});
 
-        return response.userCode;
+        return response;
     }
 
 }
