@@ -27,6 +27,7 @@ public class OauthMCConfig {
     private int port;
     private String username;
     private String password;
+    private String databaseName;
 
     public OauthMCConfig(FileConfiguration configuration) {
         String stringServerName = configuration.getString("server-name");
@@ -70,9 +71,10 @@ public class OauthMCConfig {
         if (dbMode == DatabaseMode.MYSQL) {
             ConfigurationSection section = getConfigSection(configuration, "mysql-settings");
             readDbSettings(section);
-        } else if (dbMode == DatabaseMode.REDIS) {
-            ConfigurationSection section = getConfigSection(configuration, "redis-settings");
-            readDbSettings(section);
+            databaseName = section.getString("database-name");
+            if (databaseName == null) {
+                throw new RuntimeException("No database name provided!");
+            }
         }
     }
 
@@ -83,8 +85,7 @@ public class OauthMCConfig {
 
     public enum DatabaseMode {
         SQLITE,
-        MYSQL,
-        REDIS;
+        MYSQL;
     }
 
     private ConfigurationSection getConfigSection(FileConfiguration configuration, String sectionName) {
@@ -157,4 +158,7 @@ public class OauthMCConfig {
         return password;
     }
 
+    public String getDatabaseName() {
+        return databaseName;
+    }
 }

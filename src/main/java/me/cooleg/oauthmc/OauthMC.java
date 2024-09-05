@@ -5,6 +5,7 @@ import me.cooleg.oauthmc.authentication.google.GoogleOauth;
 import me.cooleg.oauthmc.authentication.microsoft.MicrosoftOauth;
 import me.cooleg.oauthmc.listeners.AsyncPreLoginListener;
 import me.cooleg.oauthmc.persistence.IDatabaseHook;
+import me.cooleg.oauthmc.persistence.impl.MySQLHook;
 import me.cooleg.oauthmc.persistence.impl.SqliteHook;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,13 +17,11 @@ public final class OauthMC extends JavaPlugin {
         saveDefaultConfig();
         OauthMCConfig config = new OauthMCConfig(getConfig());
 
-        IDatabaseHook hook = new SqliteHook(this);;
-        if (config.getDbMode() == OauthMCConfig.DatabaseMode.SQLITE) {
-            hook = new SqliteHook(this);
-        } else if (config.getDbMode() == OauthMCConfig.DatabaseMode.REDIS) {
-            //hook = new RedisHook();
+        IDatabaseHook hook = null;
+        if (config.getDbMode() == OauthMCConfig.DatabaseMode.MYSQL) {
+            hook = new MySQLHook(config);
         } else {
-            //hook = new MySQLHook();
+            hook = new SqliteHook(this);
         }
 
         IOauth auth;

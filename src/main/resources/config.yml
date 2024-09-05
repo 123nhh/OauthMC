@@ -14,7 +14,7 @@ login-mode: "Microsoft"
 # Also supports minimessage formatting.
 kick-message: "<white>Please log in to your school account at <bold>%link%<bold> using code <bold>%code%<bold> to verify your enrollment.<white>"
 
-# Modes: "SQLite", "MySQL", "Redis"
+# Modes: "SQLite", "MySQL"
 db-mode: "SQLite"
 
 microsoft-settings:
@@ -30,9 +30,4 @@ mysql-settings:
   port: 3306
   username: ""
   password: ""
-
-redis-settings:
-  hostname: ""
-  port: 6379
-  username: ""
-  password: ""
+  database-name: ""

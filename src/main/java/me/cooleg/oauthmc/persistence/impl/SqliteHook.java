@@ -96,6 +96,7 @@ public class SqliteHook implements IDatabaseHook {
             throw new RuntimeException();
         } catch (ClassNotFoundException ex) {
             Bukkit.getLogger().severe("OauthMC: SQLITE DEPENDENCY NOT FOUND!");
+            ex.printStackTrace();
             throw new RuntimeException();
         }
     }
@@ -107,6 +108,7 @@ public class SqliteHook implements IDatabaseHook {
                 statement.executeUpdate();
             } catch (SQLException ex) {
                 Bukkit.getLogger().severe("OauthMC: FAILED TO CREATE DATABASE TABLE");
+                ex.printStackTrace();
             }
         });
     }
