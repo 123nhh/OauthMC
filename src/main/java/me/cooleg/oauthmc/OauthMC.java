@@ -15,7 +15,7 @@ public final class OauthMC extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        OauthMCConfig config = new OauthMCConfig(getConfig());
+        OauthMCConfig config = new OauthMCConfig(this);
 
         IDatabaseHook hook = null;
         if (config.getDbMode() == OauthMCConfig.DatabaseMode.MYSQL) {

@@ -4,11 +4,18 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class OauthMCConfig {
+
+    private final static int CONFIG_VER = 1;
 
     // Global Settings
     private LoginMode loginMode;
@@ -33,7 +40,13 @@ public class OauthMCConfig {
     private String password;
     private String databaseName;
 
-    public OauthMCConfig(FileConfiguration configuration) {
+    public OauthMCConfig(OauthMC main) {
+        FileConfiguration configuration = main.getConfig();
+        if (configuration.getInt("config-ver", 0) != CONFIG_VER) {
+            Bukkit.getLogger().info("OauthMC: Config version is outdated! Updating config now...");
+            configuration = updateConfig(main);
+        }
+
         String stringServerName = configuration.getString("server-name");
         if (stringServerName == null) {
             throw new RuntimeException("No server name provided to OauthMC!");
@@ -179,5 +192,37 @@ public class OauthMCConfig {
 
     public String getDatabaseName() {
         return databaseName;
+    }
+
+    private FileConfiguration updateConfig(JavaPlugin plugin) {
+        // Fetch all current values
+        FileConfiguration config = plugin.getConfig();
+        Map<String, Object> values = config.getValues(true);
+
+        // Update file to new file
+        try (InputStream stream = OauthMCConfig.class.getResourceAsStream("/config.yml")) {
+            if (stream == null) throw new RuntimeException("[" + plugin.getName() + "] Failed to load config file in jar.");
+
+            plugin.getConfig().load(new InputStreamReader(stream));
+        } catch (IOException | InvalidConfigurationException ex) {
+            throw new RuntimeException("[" + plugin.getName() + "] Failed to load updated config version.");
+        }
+
+        // Set values for options to what they were before.
+        config = plugin.getConfig();
+        for (Map.Entry<String, Object> value : values.entrySet()) {
+            // Ignore values that were removed in current config version, and leave new config version as it is.
+            if (!config.isSet(value.getKey()) || value.getKey().equals("config-ver")) continue;
+
+            config.set(value.getKey(), value.getValue());
+        }
+
+        try {
+            config.save(plugin.getDataFolder().getAbsolutePath() + "/config.yml");
+        } catch (IOException e) {
+            throw new RuntimeException("[" + plugin.getName() + "] Failed to save updated config version.");
+        }
+
+        return config;
     }
 }
