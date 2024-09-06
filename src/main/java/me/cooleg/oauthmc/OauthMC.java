@@ -34,8 +34,4 @@ public final class OauthMC extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new AsyncPreLoginListener(hook, auth, config), this);
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
 }

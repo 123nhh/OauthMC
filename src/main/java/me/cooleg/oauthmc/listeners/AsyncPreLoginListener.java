@@ -27,7 +27,6 @@ public class AsyncPreLoginListener implements Listener {
     @EventHandler
     public void onLogin(AsyncPlayerPreLoginEvent event) {
         UUID id = event.getUniqueId();
-        System.out.println(id);
         if (db.hasLoggedIn(id)) return;
 
         CodeAndLinkResponse response = auth.beginLogin(event.getUniqueId());

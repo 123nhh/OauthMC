@@ -43,7 +43,6 @@ public class GoogleOauth implements IOauth {
     public CodeAndLinkResponse beginLogin(UUID uuid) {
         if (currentlyAuthenticating.containsKey(uuid)) return currentlyAuthenticating.get(uuid);
         String text = urlToResponse(requestCodeUrl, "POST", "client_id=" + encode(clientId) + "&scope=email%20profile");
-        System.out.println(text);
         GoogleDeviceCodeResponse response = gson.fromJson(text, GoogleDeviceCodeResponse.class);
 
         currentlyAuthenticating.put(uuid, response);
@@ -61,7 +60,6 @@ public class GoogleOauth implements IOauth {
                                 "&device_code=" + encode(response.deviceCode) +
                                 "&grant_type=" + encode("urn:ietf:params:oauth:grant-type:device_code"));
 
-                System.out.println(authResponse);
                 GooglePollingResponse pollingResponse = gson.fromJson(authResponse, GooglePollingResponse.class);
 
                 if (!pollingResponse.waiting) {
@@ -73,11 +71,9 @@ public class GoogleOauth implements IOauth {
                     String payload = new String(decoder.decode(chunks[1]));
 
                     JsonObject object = JsonParser.parseString(payload).getAsJsonObject();
-                    System.out.println(payload);
                     if (!object.has("email")) {return;}
                     String email = object.get("email").getAsString();
 
-                    System.out.println(email);
                     if (db.isInUse(email)) return;
                     if (config.isEmailSuffixEnabled() && !email.endsWith(config.getEmailSuffix())) return;
 
