@@ -27,28 +27,6 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.4.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-          <configuration>
-              <relocations>
-                  <relocation>
-                      <pattern>redis.clients.jedis</pattern>
-                      <shadedPattern>me.cooleg.oauthmc.jedis</shadedPattern>
-                  </relocation>
-              </relocations>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-          </configuration>
-      </plugin>
     </plugins>
     <resources>
       <resource>
