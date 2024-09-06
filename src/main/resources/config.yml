@@ -34,3 +34,6 @@ mysql-settings:
   username: ""
   password: ""
   database-name: ""
+
+# Do not touch!
+config-ver: 1
