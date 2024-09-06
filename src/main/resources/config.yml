@@ -17,6 +17,9 @@ kick-message: "<white>Please log in to your school account at <bold>%link%<bold>
 # Modes: "SQLite", "MySQL"
 db-mode: "SQLite"
 
+# List of whitelisted UUIDS, can join without logging in with Oauth.
+whitelisted-uuids: []
+
 microsoft-settings:
   client-id: ""
   tenant: ""

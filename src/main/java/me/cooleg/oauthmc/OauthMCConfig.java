@@ -2,8 +2,11 @@ package me.cooleg.oauthmc;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.*;
 
 public class OauthMCConfig {
 
@@ -15,6 +18,7 @@ public class OauthMCConfig {
     private String kickMessage;
     private String emailSuffix;
     private boolean emailSuffixEnabled;
+    private Set<UUID> whitelistedUuids;
 
     // Microsoft-Specific Settings
     private String tenant;
@@ -43,6 +47,17 @@ public class OauthMCConfig {
 
         emailSuffix = configuration.getString("email-suffix");
         emailSuffixEnabled = emailSuffix != null && !emailSuffix.trim().isEmpty();
+
+        Set<UUID> temporarySet = new HashSet<>();
+        for (String stringUuid : configuration.getStringList("whitelisted-uuids")) {
+            try {
+                temporarySet.add(UUID.fromString(stringUuid));
+            } catch (IllegalArgumentException ex) {
+                Bukkit.getLogger().info("OauthMC: Failed to read whitelisted UUID \"" + stringUuid + "\"!");
+            }
+        }
+
+        whitelistedUuids = Collections.unmodifiableSet(temporarySet);
 
         String loginModeString = configuration.getString("login-mode").toUpperCase().trim();
         try {
@@ -132,6 +147,10 @@ public class OauthMCConfig {
 
     public boolean isEmailSuffixEnabled() {
         return emailSuffixEnabled;
+    }
+
+    public Set<UUID> getWhitelistedUuids() {
+        return whitelistedUuids;
     }
 
     public String getTenant() {
