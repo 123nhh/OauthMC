@@ -30,12 +30,16 @@ public class AsyncPreLoginListener implements Listener {
         if (config.getWhitelistedUuids().contains(id)) return;
         if (db.hasLoggedIn(id)) return;
 
-        CodeAndLinkResponse response = auth.beginLogin(event.getUniqueId());
+        try {
+            CodeAndLinkResponse response = auth.beginLogin(event.getUniqueId());
 
-        String kickText = config.getKickMessage().replace("%code%", response.userCode).replace("%link%", response.loginLink);
-        Component message = config.getServerName()
-                .append(MiniMessage.miniMessage().deserialize("\n\n" + kickText));
-        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, message);
+            String kickText = config.getKickMessage().replace("%code%", response.userCode).replace("%link%", response.loginLink);
+            Component message = config.getServerName()
+                    .append(MiniMessage.miniMessage().deserialize("\n\n" + kickText));
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, message);
+        } catch (RuntimeException ex) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("Oauth failure occurred. Please contact the admin."));
+        }
     }
 
 }
