@@ -37,8 +37,9 @@ public class AsyncPreLoginListener implements Listener {
             Component message = config.getServerName()
                     .append(MiniMessage.miniMessage().deserialize("\n\n" + kickText));
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, message);
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Component.text("Oauth failure occurred. Please contact the admin."));
+            ex.printStackTrace();
         }
     }
 
