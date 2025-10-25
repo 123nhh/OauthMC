@@ -20,6 +20,7 @@ public final class OauthMC extends JavaPlugin {
     private OauthMCConfig config;
     private IDatabaseHook databaseHook;
     private IOauth oauthProvider;
+    private AuthorizationPromptManager promptManager;
 
     @Override
     public void onEnable() {
@@ -43,9 +44,11 @@ public final class OauthMC extends JavaPlugin {
             oauthProvider = linuxDoOauth;
         }
 
+        promptManager = new AuthorizationPromptManager(this);
+
         if (config.isAuthmeEnabled() && Bukkit.getPluginManager().getPlugin("AuthMe") != null) {
             Bukkit.getLogger().info("OauthMC: AuthMe integration enabled");
-            Bukkit.getPluginManager().registerEvents(new AuthMeIntegrationListener(databaseHook, oauthProvider, config), this);
+            Bukkit.getPluginManager().registerEvents(new AuthMeIntegrationListener(this, databaseHook, oauthProvider, config), this);
             
             if (config.isDisablePasswordLogin()) {
                 Bukkit.getPluginManager().registerEvents(new PlayerCommandListener(config), this);
@@ -59,6 +62,9 @@ public final class OauthMC extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (promptManager != null) {
+            promptManager.stopAllPrompts();
+        }
         if (oauthProvider instanceof LinuxDoOauth) {
             ((LinuxDoOauth) oauthProvider).stopCallbackServer();
         }
@@ -78,6 +84,10 @@ public final class OauthMC extends JavaPlugin {
 
     public IOauth getOauthProvider() {
         return oauthProvider;
+    }
+
+    public AuthorizationPromptManager getPromptManager() {
+        return promptManager;
     }
 
 }

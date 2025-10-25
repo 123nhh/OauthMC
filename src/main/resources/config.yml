@@ -43,6 +43,17 @@ authme:
   # Session duration in hours, 0 means authorization required every time
   session-duration-hours: 24
 
+oauth:
+  prompt:
+    # Initial delay before first prompt (seconds)
+    initial_delay_seconds: 1
+    # Interval between repeated prompts (seconds)
+    repeat_interval_seconds: 10
+    # Whether to play sound with prompt
+    enable_sound: true
+    # Sound type to play (Bukkit Sound enum name)
+    sound_type: "BLOCK_NOTE_BLOCK_PLING"
+
 mysql-settings:
   hostname: ""
   port: 3306
