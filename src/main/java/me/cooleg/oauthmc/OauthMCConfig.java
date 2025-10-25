@@ -36,6 +36,8 @@ public class OauthMCConfig {
     // LinuxDo-Specific Settings
     private int linuxdoMinTrustLevel;
     private boolean linuxdoRequireActive;
+    private String linuxdoCallbackUrl;
+    private int linuxdoCallbackPort;
 
     // AuthMe Integration Settings
     private boolean authmeEnabled;
@@ -110,6 +112,8 @@ public class OauthMCConfig {
             clientSecret = section.getString("client-secret");
             linuxdoMinTrustLevel = section.getInt("min-trust-level", 0);
             linuxdoRequireActive = section.getBoolean("require-active", true);
+            linuxdoCallbackUrl = section.getString("callback-url", "http://localhost:8080/callback");
+            linuxdoCallbackPort = section.getInt("callback-port", 8080);
         }
 
         ConfigurationSection authmeSection = configuration.getConfigurationSection("authme");
@@ -241,6 +245,14 @@ public class OauthMCConfig {
 
     public int getSessionDurationHours() {
         return sessionDurationHours;
+    }
+
+    public String getLinuxDoCallbackUrl() {
+        return linuxdoCallbackUrl;
+    }
+
+    public int getLinuxDoCallbackPort() {
+        return linuxdoCallbackPort;
     }
 
     private FileConfiguration updateConfig(JavaPlugin plugin) {
