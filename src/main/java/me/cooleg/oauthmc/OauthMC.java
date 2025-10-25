@@ -2,6 +2,7 @@ package me.cooleg.oauthmc;
 
 import me.cooleg.oauthmc.authentication.IOauth;
 import me.cooleg.oauthmc.authentication.google.GoogleOauth;
+import me.cooleg.oauthmc.authentication.linuxdo.LinuxDoOauth;
 import me.cooleg.oauthmc.authentication.microsoft.MicrosoftOauth;
 import me.cooleg.oauthmc.listeners.AsyncPreLoginListener;
 import me.cooleg.oauthmc.persistence.IDatabaseHook;
@@ -11,6 +12,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class OauthMC extends JavaPlugin {
+
+    private LinuxDoOauth linuxDoOauth;
 
     @Override
     public void onEnable() {
@@ -27,11 +30,31 @@ public final class OauthMC extends JavaPlugin {
         IOauth auth;
         if (config.getLoginMode() == OauthMCConfig.LoginMode.MICROSOFT) {
             auth = new MicrosoftOauth(config.getClientId(), config.getTenant(), hook, config);
-        } else {
+        } else if (config.getLoginMode() == OauthMCConfig.LoginMode.GOOGLE) {
             auth = new GoogleOauth(config.getClientId(), config.getClientSecret(), hook, config);
+        } else {
+            linuxDoOauth = new LinuxDoOauth(
+                    config.getClientId(),
+                    config.getClientSecret(),
+                    config.getCallbackUrl(),
+                    config.getCallbackPort(),
+                    config.getTokenExpiryMinutes(),
+                    config.getMinTrustLevel(),
+                    config.isRequireActive(),
+                    hook,
+                    config
+            );
+            auth = linuxDoOauth;
         }
 
         Bukkit.getPluginManager().registerEvents(new AsyncPreLoginListener(hook, auth, config), this);
+    }
+
+    @Override
+    public void onDisable() {
+        if (linuxDoOauth != null) {
+            linuxDoOauth.shutdown();
+        }
     }
 
 }

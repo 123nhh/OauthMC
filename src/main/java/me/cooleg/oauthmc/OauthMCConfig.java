@@ -33,6 +33,13 @@ public class OauthMCConfig {
     // Google-Specific Settings
     private String clientSecret;
 
+    // LinuxDo-Specific Settings
+    private String callbackUrl;
+    private int callbackPort;
+    private int tokenExpiryMinutes;
+    private int minTrustLevel;
+    private boolean requireActive;
+
     // Remote Database Settings
     private String hostName;
     private int port;
@@ -90,10 +97,19 @@ public class OauthMCConfig {
             ConfigurationSection section = getConfigSection(configuration, "microsoft-settings");
             clientId = section.getString("client-id");
             tenant = section.getString("tenant");
-        } else {
+        } else if (loginMode == LoginMode.GOOGLE) {
             ConfigurationSection section = getConfigSection(configuration, "google-settings");
             clientId = section.getString("client-id");
             clientSecret = section.getString("client-secret");
+        } else if (loginMode == LoginMode.LINUXDO) {
+            ConfigurationSection section = getConfigSection(configuration, "linuxdo-settings");
+            clientId = section.getString("client-id");
+            clientSecret = section.getString("client-secret");
+            callbackUrl = section.getString("callback-url");
+            callbackPort = section.getInt("callback-port", 8080);
+            tokenExpiryMinutes = section.getInt("token-expiry-minutes", 10);
+            minTrustLevel = section.getInt("min-trust-level", 0);
+            requireActive = section.getBoolean("require-active", true);
         }
 
         if (dbMode == DatabaseMode.MYSQL) {
@@ -108,7 +124,8 @@ public class OauthMCConfig {
 
     public enum LoginMode {
         GOOGLE,
-        MICROSOFT;
+        MICROSOFT,
+        LINUXDO;
     }
 
     public enum DatabaseMode {
@@ -192,6 +209,26 @@ public class OauthMCConfig {
 
     public String getDatabaseName() {
         return databaseName;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public int getCallbackPort() {
+        return callbackPort;
+    }
+
+    public int getTokenExpiryMinutes() {
+        return tokenExpiryMinutes;
+    }
+
+    public int getMinTrustLevel() {
+        return minTrustLevel;
+    }
+
+    public boolean isRequireActive() {
+        return requireActive;
     }
 
     private FileConfiguration updateConfig(JavaPlugin plugin) {

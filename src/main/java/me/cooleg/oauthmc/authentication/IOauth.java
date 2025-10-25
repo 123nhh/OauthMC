@@ -59,4 +59,8 @@ public interface IOauth {
         return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
+    static String urlEncode(String s) {
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
+    }
+
 }

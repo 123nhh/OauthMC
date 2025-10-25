@@ -7,11 +7,12 @@ server-name: "<yellow>_ School Minecraft Server</yellow>"
 # Leave empty to disable. NOT RECOMMENDED.
 email-suffix: "@cooleg.me"
 
-# Modes: "Google", "Microsoft"
+# Modes: "Google", "Microsoft", "LinuxDo"
 login-mode: "Microsoft"
 
 # Set the message to be kicked with. Placeholders %link% and %code%.
 # Also supports minimessage formatting.
+# For LinuxDo mode, %link% will be the full authorization URL and %code% will be the state token.
 kick-message: "<white>Please log in to your school account at <bold>%link%<bold> using code <bold>%code%<bold> to verify your enrollment.<white>"
 
 # Modes: "SQLite", "MySQL"
@@ -27,6 +28,17 @@ microsoft-settings:
 google-settings:
   client-id: ""
   client-secret: ""
+
+linuxdo-settings:
+  client-id: ""
+  client-secret: ""
+  callback-url: "http://localhost:8080/callback"
+  callback-port: 8080
+  token-expiry-minutes: 10
+  # Optional: Minimum trust level required (0-4). Set to 0 to disable.
+  min-trust-level: 0
+  # Optional: Require active account status
+  require-active: true
 
 mysql-settings:
   hostname: ""
