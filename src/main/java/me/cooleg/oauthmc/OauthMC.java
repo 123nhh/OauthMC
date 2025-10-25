@@ -38,7 +38,9 @@ public final class OauthMC extends JavaPlugin {
         } else if (config.getLoginMode() == OauthMCConfig.LoginMode.GOOGLE) {
             oauthProvider = new GoogleOauth(config.getClientId(), config.getClientSecret(), databaseHook, config);
         } else if (config.getLoginMode() == OauthMCConfig.LoginMode.LINUXDO) {
-            oauthProvider = new LinuxDoOauth(config.getClientId(), config.getClientSecret(), databaseHook, config);
+            LinuxDoOauth linuxDoOauth = new LinuxDoOauth(config.getClientId(), config.getClientSecret(), databaseHook, config);
+            linuxDoOauth.startCallbackServer();
+            oauthProvider = linuxDoOauth;
         }
 
         if (config.isAuthmeEnabled() && Bukkit.getPluginManager().getPlugin("AuthMe") != null) {
@@ -53,6 +55,13 @@ public final class OauthMC extends JavaPlugin {
         }
 
         getCommand("oauth").setExecutor(new OauthCommand(databaseHook, config));
+    }
+
+    @Override
+    public void onDisable() {
+        if (oauthProvider instanceof LinuxDoOauth) {
+            ((LinuxDoOauth) oauthProvider).stopCallbackServer();
+        }
     }
 
     public static OauthMC getInstance() {

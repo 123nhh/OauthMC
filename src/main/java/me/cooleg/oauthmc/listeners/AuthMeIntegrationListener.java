@@ -64,12 +64,12 @@ public class AuthMeIntegrationListener implements Listener {
 
             String bindingMessage = "<yellow>欢迎来到服务器!</yellow>\n\n" +
                     "<white>首次登录需要绑定 linux.do 账号</white>\n" +
-                    "<white>请访问 <bold><click:open_url:'%link%'>%link%</click></bold></white>\n" +
-                    "<white>并输入验证码: <bold><green>%code%</green></bold></white>\n\n" +
-                    "<gray>完成验证后将自动登录服务器</gray>";
+                    "<white>请点击以下链接完成授权:</white>\n" +
+                    "<bold><click:open_url:'%link%'><green>[点击授权]</green></click></bold>\n\n" +
+                    "<gray>授权有效期：10分钟</gray>\n" +
+                    "<gray>完成授权后将自动登录服务器</gray>";
 
             String message = bindingMessage
-                    .replace("%code%", response.userCode)
                     .replace("%link%", response.loginLink);
 
             Bukkit.getScheduler().runTask(Bukkit.getPluginManager().getPlugin("OauthMC"), () -> {
@@ -113,12 +113,12 @@ public class AuthMeIntegrationListener implements Listener {
 
             String loginMessage = "<yellow>欢迎回来!</yellow>\n\n" +
                     "<white>请重新验证您的 linux.do 账号</white>\n" +
-                    "<white>请访问 <bold><click:open_url:'%link%'>%link%</click></bold></white>\n" +
-                    "<white>并输入验证码: <bold><green>%code%</green></bold></white>\n\n" +
-                    "<gray>完成验证后将自动登录服务器</gray>";
+                    "<white>请点击以下链接完成授权:</white>\n" +
+                    "<bold><click:open_url:'%link%'><green>[点击授权]</green></click></bold>\n\n" +
+                    "<gray>授权有效期：10分钟</gray>\n" +
+                    "<gray>完成授权后将自动登录服务器</gray>";
 
             String message = loginMessage
-                    .replace("%code%", response.userCode)
                     .replace("%link%", response.loginLink);
 
             Bukkit.getScheduler().runTask(Bukkit.getPluginManager().getPlugin("OauthMC"), () -> {

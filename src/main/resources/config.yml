@@ -33,6 +33,8 @@ linuxdo-settings:
   client-secret: ""
   min-trust-level: 0
   require-active: true
+  callback-url: "http://localhost:8080/callback"
+  callback-port: 8080
 
 authme:
   enabled: false
