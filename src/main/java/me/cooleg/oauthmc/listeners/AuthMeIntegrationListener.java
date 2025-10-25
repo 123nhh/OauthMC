@@ -160,17 +160,45 @@ public class AuthMeIntegrationListener implements Listener {
                     
                     if ((currentTime - lastAuthTime) < 10000) {
                         Bukkit.getScheduler().runTask(Bukkit.getPluginManager().getPlugin("OauthMC"), () -> {
-                            if (player.isOnline() && !authMeApi.isAuthenticated(player)) {
-                                authMeApi.forceLogin(player);
-                                
-                                String linuxdoUsername = db.getLinuxDoUsername(uuid);
-                                String successMessage = isFirstTime ? 
-                                        "<green>绑定成功! 欢迎加入服务器 (绑定账号: " + linuxdoUsername + ")</green>" :
-                                        "<green>验证成功! 欢迎回来 (绑定账号: " + linuxdoUsername + ")</green>";
-                                
-                                player.sendMessage(MiniMessage.miniMessage().deserialize(successMessage));
-                                Bukkit.getLogger().info("OauthMC: Player " + player.getName() + " authenticated successfully");
+                            if (!player.isOnline()) {
+                                Bukkit.getLogger().warning("OauthMC: Player " + player.getName() + " went offline during authentication");
+                                return;
                             }
+                            
+                            if (authMeApi.isAuthenticated(player)) {
+                                Bukkit.getLogger().info("OauthMC: Player " + player.getName() + " is already authenticated");
+                                return;
+                            }
+                            
+                            String playerName = player.getName();
+                            boolean isRegistered = authMeApi.isRegistered(playerName);
+                            Bukkit.getLogger().info("OauthMC: Player " + playerName + " Authme registration status: " + isRegistered);
+                            
+                            if (!isRegistered) {
+                                String dummyPassword = UUID.randomUUID().toString();
+                                Bukkit.getLogger().info("OauthMC: Attempting to auto-register player " + playerName + " in Authme");
+                                
+                                boolean registered = authMeApi.registerPlayer(playerName, dummyPassword);
+                                
+                                if (!registered) {
+                                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>注册失败，请联系管理员</red>"));
+                                    Bukkit.getLogger().severe("OauthMC: Failed to register player " + playerName + " in Authme");
+                                    return;
+                                }
+                                
+                                Bukkit.getLogger().info("OauthMC: Successfully auto-registered player " + playerName + " in Authme");
+                            }
+                            
+                            Bukkit.getLogger().info("OauthMC: Attempting to force login player " + playerName);
+                            authMeApi.forceLogin(player);
+                            
+                            String linuxdoUsername = db.getLinuxDoUsername(uuid);
+                            String successMessage = isFirstTime ? 
+                                    "<green>绑定成功! 欢迎加入服务器 (绑定账号: " + linuxdoUsername + ")</green>" :
+                                    "<green>验证成功! 欢迎回来 (绑定账号: " + linuxdoUsername + ")</green>";
+                            
+                            player.sendMessage(MiniMessage.miniMessage().deserialize(successMessage));
+                            Bukkit.getLogger().info("OauthMC: Player " + playerName + " successfully auto-logged in after linux.do authorization");
                         });
                         cancel();
                     }

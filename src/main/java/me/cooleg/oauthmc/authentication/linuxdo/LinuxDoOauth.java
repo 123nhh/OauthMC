@@ -151,13 +151,22 @@ public class LinuxDoOauth implements IOauth {
                 return;
             }
 
-            if (config.getLinuxDoMinTrustLevel() > 0 && userInfo.trustLevel < config.getLinuxDoMinTrustLevel()) {
-                Bukkit.getLogger().info("OauthMC: User " + userInfo.username + " has insufficient trust level: " + userInfo.trustLevel);
+            int minTrustLevel = config.getLinuxDoMinTrustLevel();
+            Bukkit.getLogger().info(String.format(
+                "OauthMC: Validating trust level for user %s: has %d, requires %d",
+                userInfo.username, userInfo.trustLevel, minTrustLevel
+            ));
+
+            if (minTrustLevel > 0 && userInfo.trustLevel < minTrustLevel) {
+                Bukkit.getLogger().warning(String.format(
+                    "OauthMC: User %s has insufficient trust level: %d (requires %d)",
+                    userInfo.username, userInfo.trustLevel, minTrustLevel
+                ));
                 return;
             }
 
             if (config.isLinuxDoRequireActive() && !userInfo.active) {
-                Bukkit.getLogger().info("OauthMC: User " + userInfo.username + " is not active");
+                Bukkit.getLogger().warning("OauthMC: User " + userInfo.username + " is not active");
                 return;
             }
 
@@ -272,7 +281,18 @@ public class LinuxDoOauth implements IOauth {
                 return null;
             }
 
-            return gson.fromJson(response, LinuxDoUserInfo.class);
+            Bukkit.getLogger().info("OauthMC: Raw user info JSON: " + response);
+            
+            LinuxDoUserInfo userInfo = gson.fromJson(response, LinuxDoUserInfo.class);
+            
+            if (userInfo != null) {
+                Bukkit.getLogger().info("OauthMC: Parsed user info: " + userInfo.toString());
+                Bukkit.getLogger().info("OauthMC: Trust level: " + userInfo.trustLevel);
+            } else {
+                Bukkit.getLogger().warning("OauthMC: Failed to parse user info from JSON");
+            }
+            
+            return userInfo;
             
         } catch (IOException e) {
             Bukkit.getLogger().severe("OauthMC: Error getting user info");
