@@ -7,7 +7,7 @@ server-name: "<yellow>_ School Minecraft Server</yellow>"
 # Leave empty to disable. NOT RECOMMENDED.
 email-suffix: "@cooleg.me"
 
-# Modes: "Google", "Microsoft"
+# Modes: "Google", "Microsoft", "LinuxDo"
 login-mode: "Microsoft"
 
 # Set the message to be kicked with. Placeholders %link% and %code%.
@@ -27,6 +27,19 @@ microsoft-settings:
 google-settings:
   client-id: ""
   client-secret: ""
+
+linuxdo-settings:
+  client-id: ""
+  client-secret: ""
+  min-trust-level: 0
+  require-active: true
+
+authme:
+  enabled: false
+  force-linuxdo-binding: false
+  disable-password-login: false
+  # Session duration in hours, 0 means authorization required every time
+  session-duration-hours: 24
 
 mysql-settings:
   hostname: ""

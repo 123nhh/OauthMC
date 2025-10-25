@@ -64,12 +64,105 @@ public class SqliteHook implements IDatabaseHook {
     @Override
     public void setLink(UUID id, String email) {
         Connection conn = getConnection();
-        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO OauthMC (UUID, Email) VALUES (?, ?) ON CONFLICT(UUID) DO NOTHING ON CONFLICT(Email) DO NOTHING")) {
+        try (PreparedStatement statement = conn.prepareStatement("INSERT INTO OauthMC (UUID, Email) VALUES (?, ?) ON CONFLICT(UUID) DO UPDATE SET Email = excluded.Email ON CONFLICT(Email) DO NOTHING")) {
             statement.setString(1, id.toString());
             statement.setString(2, email);
             statement.executeUpdate();
         }catch (SQLException ex) {
             Bukkit.getLogger().severe("OauthMC: FAILED TO SAVE EMAIL FOR UUID " + id.toString());
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void setLinuxDoBinding(UUID uuid, String linuxdoId, String linuxdoUsername) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("UPDATE OauthMC SET LinuxDoId = ?, LinuxDoUsername = ? WHERE UUID = ?")) {
+            statement.setString(1, linuxdoId);
+            statement.setString(2, linuxdoUsername);
+            statement.setString(3, uuid.toString());
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO SET LINUXDO BINDING FOR UUID " + uuid.toString());
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public String getLinuxDoId(UUID uuid) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("SELECT LinuxDoId FROM OauthMC WHERE UUID = ?")) {
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                return results.getString(1);
+            }
+            return null;
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO GET LINUXDO ID FOR UUID " + uuid.toString());
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public String getLinuxDoUsername(UUID uuid) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("SELECT LinuxDoUsername FROM OauthMC WHERE UUID = ?")) {
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                return results.getString(1);
+            }
+            return null;
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO GET LINUXDO USERNAME FOR UUID " + uuid.toString());
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public void updateLastAuthTime(UUID uuid) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("UPDATE OauthMC SET LastAuthTime = ? WHERE UUID = ?")) {
+            statement.setLong(1, System.currentTimeMillis());
+            statement.setString(2, uuid.toString());
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO UPDATE LAST AUTH TIME FOR UUID " + uuid.toString());
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public long getLastAuthTime(UUID uuid) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("SELECT LastAuthTime FROM OauthMC WHERE UUID = ?")) {
+            statement.setString(1, uuid.toString());
+            ResultSet results = statement.executeQuery();
+
+            if (results.next()) {
+                return results.getLong(1);
+            }
+            return 0;
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO GET LAST AUTH TIME FOR UUID " + uuid.toString());
+            ex.printStackTrace();
+            return 0;
+        }
+    }
+
+    @Override
+    public void removeBinding(UUID uuid) {
+        Connection conn = getConnection();
+        try (PreparedStatement statement = conn.prepareStatement("DELETE FROM OauthMC WHERE UUID = ?")) {
+            statement.setString(1, uuid.toString());
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("OauthMC: FAILED TO REMOVE BINDING FOR UUID " + uuid.toString());
             ex.printStackTrace();
         }
     }
@@ -104,12 +197,25 @@ public class SqliteHook implements IDatabaseHook {
     public void createTable() {
         CompletableFuture.runAsync(() -> {
             Connection conn = getConnection();
-            try (PreparedStatement statement = conn.prepareStatement("CREATE TABLE IF NOT EXISTS OauthMC (UUID Char(36) PRIMARY KEY, Email VarChar(254) UNIQUE) WITHOUT ROWID")) {
+            try (PreparedStatement statement = conn.prepareStatement("CREATE TABLE IF NOT EXISTS OauthMC (UUID Char(36) PRIMARY KEY, Email VarChar(254) UNIQUE, LinuxDoId VarChar(100), LinuxDoUsername VarChar(100), LastAuthTime BIGINT DEFAULT 0) WITHOUT ROWID")) {
                 statement.executeUpdate();
             } catch (SQLException ex) {
                 Bukkit.getLogger().severe("OauthMC: FAILED TO CREATE DATABASE TABLE");
                 ex.printStackTrace();
             }
+            
+            // Add new columns if they don't exist (for migration)
+            try {
+                conn.prepareStatement("ALTER TABLE OauthMC ADD COLUMN LinuxDoId VarChar(100)").executeUpdate();
+            } catch (SQLException ignored) {}
+            
+            try {
+                conn.prepareStatement("ALTER TABLE OauthMC ADD COLUMN LinuxDoUsername VarChar(100)").executeUpdate();
+            } catch (SQLException ignored) {}
+            
+            try {
+                conn.prepareStatement("ALTER TABLE OauthMC ADD COLUMN LastAuthTime BIGINT DEFAULT 0").executeUpdate();
+            } catch (SQLException ignored) {}
         });
     }
 }

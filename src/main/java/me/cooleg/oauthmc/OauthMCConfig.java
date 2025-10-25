@@ -33,6 +33,16 @@ public class OauthMCConfig {
     // Google-Specific Settings
     private String clientSecret;
 
+    // LinuxDo-Specific Settings
+    private int linuxdoMinTrustLevel;
+    private boolean linuxdoRequireActive;
+
+    // AuthMe Integration Settings
+    private boolean authmeEnabled;
+    private boolean forceLinuxDoBinding;
+    private boolean disablePasswordLogin;
+    private int sessionDurationHours;
+
     // Remote Database Settings
     private String hostName;
     private int port;
@@ -90,10 +100,24 @@ public class OauthMCConfig {
             ConfigurationSection section = getConfigSection(configuration, "microsoft-settings");
             clientId = section.getString("client-id");
             tenant = section.getString("tenant");
-        } else {
+        } else if (loginMode == LoginMode.GOOGLE) {
             ConfigurationSection section = getConfigSection(configuration, "google-settings");
             clientId = section.getString("client-id");
             clientSecret = section.getString("client-secret");
+        } else if (loginMode == LoginMode.LINUXDO) {
+            ConfigurationSection section = getConfigSection(configuration, "linuxdo-settings");
+            clientId = section.getString("client-id");
+            clientSecret = section.getString("client-secret");
+            linuxdoMinTrustLevel = section.getInt("min-trust-level", 0);
+            linuxdoRequireActive = section.getBoolean("require-active", true);
+        }
+
+        ConfigurationSection authmeSection = configuration.getConfigurationSection("authme");
+        if (authmeSection != null) {
+            authmeEnabled = authmeSection.getBoolean("enabled", false);
+            forceLinuxDoBinding = authmeSection.getBoolean("force-linuxdo-binding", false);
+            disablePasswordLogin = authmeSection.getBoolean("disable-password-login", false);
+            sessionDurationHours = authmeSection.getInt("session-duration-hours", 24);
         }
 
         if (dbMode == DatabaseMode.MYSQL) {
@@ -108,7 +132,8 @@ public class OauthMCConfig {
 
     public enum LoginMode {
         GOOGLE,
-        MICROSOFT;
+        MICROSOFT,
+        LINUXDO;
     }
 
     public enum DatabaseMode {
@@ -192,6 +217,30 @@ public class OauthMCConfig {
 
     public String getDatabaseName() {
         return databaseName;
+    }
+
+    public int getLinuxDoMinTrustLevel() {
+        return linuxdoMinTrustLevel;
+    }
+
+    public boolean isLinuxDoRequireActive() {
+        return linuxdoRequireActive;
+    }
+
+    public boolean isAuthmeEnabled() {
+        return authmeEnabled;
+    }
+
+    public boolean isForceLinuxDoBinding() {
+        return forceLinuxDoBinding;
+    }
+
+    public boolean isDisablePasswordLogin() {
+        return disablePasswordLogin;
+    }
+
+    public int getSessionDurationHours() {
+        return sessionDurationHours;
     }
 
     private FileConfiguration updateConfig(JavaPlugin plugin) {

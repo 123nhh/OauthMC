@@ -3,4 +3,10 @@ version: '${project.version}'
 main: me.cooleg.oauthmc.OauthMC
 api-version: '1.18'
 author: TrollsterCooleg
-description: Plugin to authenticate players logging in through Google or Microsoft.
+description: Plugin to authenticate players logging in through Google, Microsoft, or linux.do OAuth.
+softdepend: [AuthMe]
+commands:
+  oauth:
+    description: Manage OAuth bindings
+    usage: /oauth <bind|unbind|status>
+    aliases: [oauthmc]
